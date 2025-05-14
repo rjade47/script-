@@ -1,0 +1,550 @@
+-- Configuration
+local KeySystem = disable -- Set to false to disable key system and Set to true to enable key system
+local Key = "Riotscripter" -- New key for accessing the scripts
+
+-- Game IDs and their corresponding script URLs
+local GameScripts = {
+    [155615604] = "https://raw.githubusercontent.com/Chaosscripter/devguy100-PrizzLife/refs/heads/main/pladmin.lua",
+    [3101667897] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Legends%20of%20Speed%203",
+    [5293755937] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Speed%20Run%20Simulator",
+    [6875469709] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Strongest%20Punch%20Simulator",
+    [3177438863] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Dragon%20Blox%20V2", -- Dragon Blox World 1
+    [7040546583] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Dragon%20Blox%20V2", -- Dragon Blox World 2
+    [7888441249] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Dragon%20Blox%20V2", -- Dragon Blox World 3
+    [16784977282] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Super%20Saiyan%20Simulator%202%20V2", -- World 1
+    [16785155911] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Super%20Saiyan%20Simulator%202%20V2", -- World 2
+    [16785157439] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Super%20Saiyan%20Simulator%202%20V2", -- World 3
+    [10201206782] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Raise%20a%20Sonic%20EXE",
+    [5310443220] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/God%20Tycoon",
+    [574407221] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Super%20Hero%20Tycoon",
+    [3623096087] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Muscle%20Legends",
+    [5490351219] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Clicker%20Madness%202",
+    [16732694052] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Fisch",
+    [9285238704] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Race%20Clicker",
+    [10036491877] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/refs/heads/main/Strongest%20Lifting%20Simulator",
+    [87269112889940] = "https://raw.githubusercontent.com/Chaosscripter/Riotscripter/main/Gyyat%20Simulator" -- Gyyat Simulator added back
+}
+
+-- Function to handle key submission
+local function OnSubmitKey()
+    if not KeySystem or KeyInput.Text == Key then
+        Notify("Success", "Key confirmed! Loading script...", "success", 3)
+
+        local gameId = game.PlaceId
+        local scriptUrl = GameScripts[gameId]
+
+        if scriptUrl then
+            local success, result = pcall(function()
+                return game:HttpGet(scriptUrl)
+            end)
+
+            if success then
+                local goal = {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}
+                local tween = TweenService:Create(MainFrame, TweenInfo.new(0.4), goal)
+                tween:Play()
+                tween.Completed:Connect(function()
+                    ScreenGui:Destroy()
+                    pcall(function()
+                        loadstring(result)()
+                    end)
+                end)
+            else
+                Notify("Download Error", "Failed to download script. Check your internet connection.", "error", 5)
+            end
+        else
+            Notify("Game Not Supported", "No script available for this game (ID: "..gameId..")", "error", 5)
+        end
+    else
+        KeyInput.Text = ""
+        Notify("Invalid Key", "The key you entered is incorrect. Please try again.", "error", 5)
+
+        -- Shake animation for incorrect key
+        for i = 1, 5 do
+            local offset = (i % 2 == 0) and 5 or -5
+            local goal = {Position = UDim2.new(0.5, -175 + offset, 0.5, -140)}
+            local tween = TweenService:Create(MainFrame, TweenInfo.new(0.05), goal)
+            tween:Play()
+            task.wait(0.05)
+        end
+
+        local goal = {Position = UDim2.new(0.5, -175, 0.5, -140)}
+        local tween = TweenService:Create(MainFrame, TweenInfo.new(0.1), goal)
+        tween:Play()
+    end
+end
+
+-- Services
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MidnightHubGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = game.CoreGui
+end
+
+-- Colors
+local Colors = {
+    Background = Color3.fromRGB(25, 25, 35),
+    DarkAccent = Color3.fromRGB(20, 20, 30),
+    LightAccent = Color3.fromRGB(35, 35, 50),
+    Primary = Color3.fromRGB(138, 43, 226), -- Purple color
+    Secondary = Color3.fromRGB(100, 25, 180),
+    Text = Color3.fromRGB(255, 255, 255),
+    Error = Color3.fromRGB(255, 75, 75),
+    Success = Color3.fromRGB(75, 255, 100),
+    Discord = Color3.fromRGB(88, 101, 242)
+}
+
+-- Create Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 280)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -140)
+MainFrame.BackgroundColor3 = Colors.Background
+MainFrame.BorderSizePixel = 0
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Parent = ScreenGui
+
+-- Add corner radius
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+-- Add shadow
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 30, 1, 30)
+Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://6015897843"
+Shadow.ImageColor3 = Color3.new(0, 0, 0)
+Shadow.ImageTransparency = 0.6
+Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+Shadow.ScaleType = Enum.ScaleType.Slice
+Shadow.SliceScale = 1
+Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+Shadow.ZIndex = -1
+Shadow.Parent = MainFrame
+
+-- Create Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.Position = UDim2.new(0, 0, 0, 0)
+TitleBar.BackgroundColor3 = Colors.DarkAccent
+TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 2
+TitleBar.Parent = MainFrame
+
+-- Add corner radius to title bar
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleBar
+
+-- Create Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Midnight Hub"
+Title.TextColor3 = Colors.Text
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.ZIndex = 4
+Title.Parent = TitleBar
+
+-- Create Logo
+local Logo = Instance.new("ImageLabel")
+Logo.Size = UDim2.new(0, 48, 0, 48)
+Logo.Position = UDim2.new(0, 12, 0, 8)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://72696907511849"
+Logo.ZIndex = 5
+Logo.Parent = TitleBar
+
+-- Create Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Colors.Text
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 24
+CloseButton.ZIndex = 5
+CloseButton.Parent = TitleBar
+
+-- Create Status Label
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(0.9, 0, 0, 25)
+StatusLabel.Position = UDim2.new(0.05, 0, 0, 50)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Enter your key to access scripts"
+StatusLabel.TextColor3 = Colors.Text
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 14
+StatusLabel.Parent = MainFrame
+
+-- Create Key Input
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(0.9, 0, 0, 40)
+KeyInput.Position = UDim2.new(0.05, 0, 0, 85)
+KeyInput.BackgroundColor3 = Colors.LightAccent
+KeyInput.BorderSizePixel = 0
+KeyInput.PlaceholderText = "Enter Key"
+KeyInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+KeyInput.TextColor3 = Colors.Text
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.TextSize = 16
+KeyInput.ClearTextOnFocus = false
+KeyInput.Parent = MainFrame
+
+-- Add corner radius to key input
+local KeyInputCorner = Instance.new("UICorner")
+KeyInputCorner.CornerRadius = UDim.new(0, 8)
+KeyInputCorner.Parent = KeyInput
+
+-- Create Submit Button
+local SubmitButton = Instance.new("TextButton")
+SubmitButton.Size = UDim2.new(0.9, 0, 0, 40)
+SubmitButton.Position = UDim2.new(0.05, 0, 0, 135)
+SubmitButton.BackgroundColor3 = Colors.Primary
+SubmitButton.BorderSizePixel = 0
+SubmitButton.Text = "Submit Key"
+SubmitButton.TextColor3 = Colors.Text
+SubmitButton.Font = Enum.Font.GothamBold
+SubmitButton.TextSize = 16
+SubmitButton.Parent = MainFrame
+
+-- Add corner radius to submit button
+local SubmitCorner = Instance.new("UICorner")
+SubmitCorner.CornerRadius = UDim.new(0, 8)
+SubmitCorner.Parent = SubmitButton
+
+-- Create Discord Link
+local DiscordButton = Instance.new("TextButton")
+DiscordButton.Size = UDim2.new(0.9, 0, 0, 40)
+DiscordButton.Position = UDim2.new(0.05, 0, 0, 185)
+DiscordButton.BackgroundColor3 = Colors.Discord
+DiscordButton.BorderSizePixel = 0
+DiscordButton.Text = "Join Discord"
+DiscordButton.TextColor3 = Colors.Text
+DiscordButton.Font = Enum.Font.GothamBold
+DiscordButton.TextSize = 16
+DiscordButton.Parent = MainFrame
+
+-- Add corner radius to discord button
+local DiscordCorner = Instance.new("UICorner")
+DiscordCorner.CornerRadius = UDim.new(0, 8)
+DiscordCorner.Parent = DiscordButton
+
+-- Create Game Support Label
+local GameSupportLabel = Instance.new("TextLabel")
+GameSupportLabel.Size = UDim2.new(0.9, 0, 0, 20)
+GameSupportLabel.Position = UDim2.new(0.05, 0, 0, 235)
+GameSupportLabel.BackgroundTransparency = 1
+GameSupportLabel.TextColor3 = Colors.Text
+GameSupportLabel.Font = Enum.Font.Gotham
+GameSupportLabel.TextSize = 12
+GameSupportLabel.Parent = MainFrame
+
+-- Check if current game is supported
+local CurrentGameId = game.PlaceId
+local IsGameSupported = GameScripts[CurrentGameId] ~= nil
+
+if IsGameSupported then
+    GameSupportLabel.Text = "√ This game is supported!"
+    GameSupportLabel.TextColor3 = Colors.Success
+else
+    GameSupportLabel.Text = "X This game is not supported!"
+    GameSupportLabel.TextColor3 = Colors.Error
+end
+
+-- Create Version Label
+local VersionLabel = Instance.new("TextLabel")
+VersionLabel.Size = UDim2.new(0.9, 0, 0, 20)
+VersionLabel.Position = UDim2.new(0.05, 0, 0, 255)
+VersionLabel.BackgroundTransparency = 1
+VersionLabel.Text = "v2.2.0"
+VersionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+VersionLabel.Font = Enum.Font.Gotham
+VersionLabel.TextSize = 10
+VersionLabel.Parent = MainFrame
+
+-- Function to create visual feedback for buttons
+local function CreateButtonEffect(button)
+    button.MouseEnter:Connect(function()
+        local goal = {BackgroundColor3 = button.BackgroundColor3:Lerp(Colors.Text, 0.2)}
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), goal)
+        tween:Play()
+    end)
+
+    button.MouseLeave:Connect(function()
+        local originalColor = (button == DiscordButton and Colors.Discord) or (button == SubmitButton and Colors.Primary) or Colors.LightAccent
+        local goal = {BackgroundColor3 = originalColor}
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), goal)
+        tween:Play()
+    end)
+
+    button.MouseButton1Down:Connect(function()
+        local goal = {Size = button.Size - UDim2.new(0, 2, 0, 2), Position = button.Position + UDim2.new(0, 1, 0, 1)}
+        local tween = TweenService:Create(button, TweenInfo.new(0.1), goal)
+        tween:Play()
+    end)
+
+    button.MouseButton1Up:Connect(function()
+        local goal = {Size = UDim2.new(0.9, 0, 0, 40), Position = button.Position - UDim2.new(0, 1, 0, 1)}
+        local tween = TweenService:Create(button, TweenInfo.new(0.1), goal)
+        tween:Play()
+    end)
+end
+
+-- Add button effects
+CreateButtonEffect(SubmitButton)
+CreateButtonEffect(DiscordButton)
+
+-- Make UI draggable from anywhere
+local Dragging = false
+local DragInput = nil
+local DragStart = nil
+local StartPos = nil
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        DragStart = input.Position
+        StartPos = MainFrame.Position
+
+        local InputChanged = UserInputService.InputChanged:Connect(function()
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                local Delta = input.Position - DragStart
+                MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+            end
+        end)
+
+        local InputEnded = UserInputService.InputEnded:Connect(function()
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                Dragging = false
+                InputChanged:Disconnect()
+                InputEnded:Disconnect()
+            end
+        end)
+    end
+end)
+
+-- Function to display notifications
+local function Notify(title, text, type, duration)
+    duration = duration or 5
+
+    local NotifFrame = Instance.new("Frame")
+    NotifFrame.Size = UDim2.new(0, 280, 0, 70)
+    NotifFrame.Position = UDim2.new(1, 10, 1, -80)
+    NotifFrame.BackgroundColor3 = Colors.Background
+    NotifFrame.BorderSizePixel = 0
+    NotifFrame.AnchorPoint = Vector2.new(1, 1)
+    NotifFrame.Parent = ScreenGui
+
+    local NotifCorner = Instance.new("UICorner")
+    NotifCorner.CornerRadius = UDim.new(0, 8)
+    NotifCorner.Parent = NotifFrame
+
+    local NotifShadow = Instance.new("ImageLabel")
+    NotifShadow.Size = UDim2.new(1, 30, 1, 30)
+    NotifShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    NotifShadow.BackgroundTransparency = 1
+    NotifShadow.Image = "rbxassetid://6015897843"
+    NotifShadow.ImageColor3 = Color3.new(0, 0, 0)
+    NotifShadow.ImageTransparency = 0.6
+    NotifShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    NotifShadow.ScaleType = Enum.ScaleType.Slice
+    NotifShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    NotifShadow.ZIndex = -1
+    NotifShadow.Parent = NotifFrame
+
+    local StatusBar = Instance.new("Frame")
+    StatusBar.Size = UDim2.new(0, 5, 1, 0)
+    StatusBar.Position = UDim2.new(0, 0, 0, 0)
+    StatusBar.BorderSizePixel = 0
+    StatusBar.BackgroundColor3 = type == "success" and Colors.Success or type == "error" and Colors.Error or type == "info" and Colors.Primary or Colors.Discord
+    StatusBar.Parent = NotifFrame
+
+    local StatusCorner = Instance.new("UICorner")
+    StatusCorner.CornerRadius = UDim.new(0, 8)
+    StatusCorner.Parent = StatusBar
+
+    local StatusPadding = Instance.new("UIPadding")
+    StatusPadding.PaddingRight = UDim.new(0, 5)
+    StatusPadding.Parent = StatusBar
+
+    local NotifTitle = Instance.new("TextLabel")
+    NotifTitle.Size = UDim2.new(1, -40, 0, 25)
+    NotifTitle.Position = UDim2.new(0, 15, 0, 5)
+    NotifTitle.BackgroundTransparency = 1
+    NotifTitle.Text = title
+    NotifTitle.Font = Enum.Font.GothamBold
+    NotifTitle.TextSize = 14
+    NotifTitle.TextColor3 = Colors.Text
+    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
+    NotifTitle.Parent = NotifFrame
+
+    local NotifText = Instance.new("TextLabel")
+    NotifText.Size = UDim2.new(1, -25, 0, 35)
+    NotifText.Position = UDim2.new(0, 15, 0, 30)
+    NotifText.BackgroundTransparency = 1
+    NotifText.Text = text
+    NotifText.Font = Enum.Font.Gotham
+    NotifText.TextSize = 12
+    NotifText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    NotifText.TextXAlignment = Enum.TextXAlignment.Left
+    NotifText.TextWrapped = true
+    NotifText.Parent = NotifFrame
+
+    local NotifClose = Instance.new("TextButton")
+    NotifClose.Size = UDim2.new(0, 18, 0, 18)
+    NotifClose.Position = UDim2.new(1, -20, 0, 8)
+    NotifClose.BackgroundTransparency = 1
+    NotifClose.Text = "Closing Midnight Hub"
+    NotifClose.TextColor3 = Colors.Text
+    NotifClose.Font = Enum.Font.GothamBold
+    NotifClose.TextSize = 14
+    NotifClose.Parent = NotifFrame
+
+    NotifFrame.Position = UDim2.new(1, 290, 1, -80)
+    local goal = {Position = UDim2.new(1, -10, 1, -80)}
+    local tween = TweenService:Create(NotifFrame, TweenInfo.new(0.4), goal)
+    tween:Play()
+
+    local function CloseNotif()
+        local goal = {Position = UDim2.new(1, 290, 1, -80)}
+        local tween = TweenService:Create(NotifFrame, TweenInfo.new(0.4), goal)
+        tween:Play()
+        tween.Completed:Connect(function()
+            NotifFrame:Destroy()
+        end)
+    end
+
+    NotifClose.MouseButton1Click:Connect(CloseNotif)
+    task.delay(duration, CloseNotif)
+end
+
+-- Function to handle key submission
+local function OnSubmitKey()
+    if not KeySystem or KeyInput.Text == Key then
+        Notify("Success", "Key confirmed! Loading script...", "success", 3)
+
+        local gameId = game.PlaceId
+        local scriptUrl = GameScripts[gameId]
+
+        if scriptUrl then
+            local success, result = pcall(function()
+                return game:HttpGet(scriptUrl)
+            end)
+
+            if success then
+                local goal = {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}
+                local tween = TweenService:Create(MainFrame, TweenInfo.new(0.4), goal)
+                tween:Play()
+                tween.Completed:Connect(function()
+                    ScreenGui:Destroy()
+                    pcall(function()
+                        loadstring(result)()
+                    end)
+                end)
+            else
+                Notify("Download Error", "Failed to download script. Check your internet connection.", "error", 5)
+            end
+        else
+            Notify("Game Not Supported", "No script available for this game (ID: "..gameId..")", "error", 5)
+        end
+    else
+        KeyInput.Text = ""
+        Notify("Invalid Key", "The key you entered is incorrect. Please try again.", "error", 5)
+
+        -- Shake animation for incorrect key
+        for i = 1, 5 do
+            local offset = (i % 2 == 0) and 5 or -5
+            local goal = {Position = UDim2.new(0.5, -175 + offset, 0.5, -140)}
+            local tween = TweenService:Create(MainFrame, TweenInfo.new(0.05), goal)
+            tween:Play()
+            task.wait(0.05)
+        end
+
+        local goal = {Position = UDim2.new(0.5, -175, 0.5, -140)}
+        local tween = TweenService:Create(MainFrame, TweenInfo.new(0.1), goal)
+        tween:Play()
+    end
+end
+
+-- Function to open Discord link
+local function OpenDiscord()
+    local DiscordLink = "https://discord.gg/your-invite-code" -- Replace with your actual Discord invite
+
+    if syn and syn.request then
+        syn.request({
+            Url = "http://127.0.0.1:6463/rpc?v=1",
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json", ["Origin"] = "https://discord.com"},
+            Body = HttpService:JSONEncode({
+                cmd = "INVITE_BROWSER",
+                args = {code = string.gsub(DiscordLink, "https://discord.gg/", "")},
+                nonce = HttpService:GenerateGUID(false)
+            })
+        })
+    else
+        local success = pcall(function()
+            setclipboard(DiscordLink)
+            return true
+        end)
+
+        if success then
+            Notify("Discord", "Copied invite link to clipboard!", "info", 3)
+        else
+            Notify("Error", "Failed to open Discord link.", "error", 3)
+        end
+    end
+end
+
+-- Connect buttons to functions
+SubmitButton.MouseButton1Click:Connect(OnSubmitKey)
+DiscordButton.MouseButton1Click:Connect(OpenDiscord)
+CloseButton.MouseButton1Click:Connect(function()
+    local goal = {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}
+    local tween = TweenService:Create(MainFrame, TweenInfo.new(0.4), goal)
+    tween:Play()
+    tween.Completed:Connect(function()
+        ScreenGui:Destroy()
+    end)
+end)
+
+-- Enter key shortcut
+KeyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        OnSubmitKey()
+    end
+end)
+
+-- Animation for initial appearance
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+local goal = {Size = UDim2.new(0, 350, 0, 280), Position = UDim2.new(0.5, -175, 0.5, -140)}
+local tween = TweenService:Create(MainFrame, TweenInfo.new(0.4), goal)
+tween:Play()
+
+-- Initial notification
+Notify("Midnight Hub", "Welcome to Midnight Hub v2.2.0", "info", 4)
+
+-- Auto-detect game and show appropriate message
+if IsGameSupported then
+    task.wait(0.5)
+    Notify("Game Detected", "This game is supported! Enter your key.", "success", 4)
+    end
