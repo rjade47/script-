@@ -1,5 +1,5 @@
 -- Configuration
-local KeySystem = disable -- Set to false to disable key system and Set to true to enable key system
+local KeySystem = false -- Set to false to disable key system and Set to true to enable key system
 local Key = "Riotscripter" -- New key for accessing the scripts
 
 -- Game IDs and their corresponding script URLs
